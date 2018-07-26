@@ -1,8 +1,7 @@
-import time
 import numpy as np
 import math
 import random
-
+import time
 
 def open_dictinary(dictinary):
 	english_dict_path="english_sowpods.txt"
@@ -53,18 +52,24 @@ def dice_and_board(board_size):
 
 	if board_size==4:
 		while True:
-			print("Choose the dice distribution:\n1.New version\n2.Old version")
-			choce=int(input(">"))
-			if choce==1 :
+			try:
+				print("\nChoose the dice distribution:\n1.New version\n2.Old version")
+				choice=int(input(">"))
+			except ValueError:
+				print("\nWrong input!!!Please, input 1 or 2")
+			if choice==1 :
 				dices=dices_classic_new
 				break
-			elif choce==2 :
+			elif choice==2 :
 				dices=dices_classic_old
 				break
+			else:
+				print("\nWrong input!!!Please, input 1 or 2")
 	elif board_size==3:
 		dices=dices_small
 	elif board_size==5:
 		dices=dicese_big
+	board_time_start=time.time()
 	num=0
 	for x in range(0,(board_size)):
 		for y in range(0,(board_size)):
@@ -73,14 +78,15 @@ def dice_and_board(board_size):
 			a=random.randint(0,5)
 			board[x][y]=dices[num][a]
 			num+=1
-	return board
+	board_time=time.time()-board_time_start
+	return board, board_time
 # looking for words on the board the board an
 def find_words(letters_list,dictinary):
 	# looking for possible words which contain just letters from the board
 	possible_words=[]
 	for word in dictinary:
 		check=0
-		for letter in word:
+		for letter in word: # for each letter on the board checking if the words from the dictinary have it
 			count_letters=letters_list.count(letter)
 			if count_letters==0:
 				break
@@ -91,11 +97,11 @@ def find_words(letters_list,dictinary):
 			check+=1
 		if check==len(word):
 			possible_words.append(word)
+	possible_words.remove('')
 	return possible_words
 # def count_points(matched_words):
 # 	return score
 #  Checking if the letter on the board already part ofthe word
-
 # #Method to check is the word on the board
 def word_checker(size,word,board,x,y,letter_number,checked):
 
@@ -187,39 +193,69 @@ def score_counter(words_list, size):
 			score+=14
 	return score
 def main():
+	start_time=time.time()
 	size=0
 	while True:
-		print("Chose the board:\n1.3x3\n2.4x4\n3.5x5 ")
-		size=int(input(">"))
-		if size>=1 and size<=3:
-			break
+		try:
+			print("\nChose the board:\n1.3x3\n2.4x4\n3.5x5 ")
+			size=int(input(">"))
+			if size>=1 and size<=3:
+				break
+			else:
+				print("\nPlease, input number from 1 to 3")
+		except ValueError:
+			print("\nWrong input!!!Please, input number from 1 to 3")
 	while True:
-		print("Chose the dictinary:\n1.English\n2.American\n ")
-		dictinary=int(input(">"))
-		if dictinary==1 or dictinary==2:
-			break
-	words_list=open_dictinary(dictinary)
+		try:
+			print("\nChose the dictinary:\n1.English\n2.American\n ")
+			dictinary=int(input(">"))
+			if dictinary==1 or dictinary==2:
+				break
+			else:
+				print("\nPlease, input 1 or 2")
+		except ValueError:
+			print("\nWrong input!!! Please, input 1 or 2")
 	letters_list=[]
 	size+=2
-	board=dice_and_board(size)
-	# board=[["Z","Y","O"],["P","X","Q"],["B","O","Y"]]
+	# Creating the board
+	board, board_time=dice_and_board(size)
+	# printing letteres in the board view
+	print("\nBOARD:\n")
 	for x in range(size):
 		for y in range(size):
 			letters_list.append(board[x][y])
 			print(" "+board[x][y], end="")
 		print()
-	possible_words=find_words(letters_list,words_list)
-	possible_words.remove('')
+	dict_time=time.time()
+	words_list=open_dictinary(dictinary) # upload dictinary
+	search_time=time.time()
+	possible_words=find_words(letters_list,words_list)# list of words containing just letters frm the board
+	search_finish_time=time.time()
 	matched_words=[]
-	for word in possible_words:
+	full_check_time=0
+	for word in possible_words: # checking every words on the bord if its matching
+		check_time=time.time()
 		match=word_checker(size,word,board,0,0,0,[])
+		check_finish_time=time.time()
 		if match==1:
 			matched_words.append(word)
-	# print(possible_words)
-	score=score_counter(matched_words, size)
-	print("Score: "+str(score))
-	print("Words: ")
-	print(matched_words)
+		full_check_time=full_check_time+(check_finish_time-check_time)
+	score_time=time.time()
+	#Counting score and store the result in the dictinary
+	result={"score": score_counter(matched_words, size),"words": matched_words} 
+	finish_time=time.time()
+	print("\nResult = "+str(result))
+	print()
+	print("-"*70)
+	print("\nBENCHMARKING\n")
+	print("---Creation board and dice distribution : " +str(round(board_time,6)))
+	print("---Uploading dictinary: "+ str(round(search_time-dict_time,6)))
+	print("---Search for possible matching words: " + str(round((search_finish_time-search_time),6)))
+	print("---Average time for one word checking: " + str(round((full_check_time/len(possible_words)),6)))
+	print("---Total words were checked: "+ str(len(possible_words)))
+	print("---Time for all possible words checking: "+ str(round(full_check_time,6)))
+	print("---Time to count the score: " + str(round((finish_time-score_time),6)))
+	print("---Time from the start of programm: "+ str(round((finish_time-start_time),6)))
 	return
 
 main()
