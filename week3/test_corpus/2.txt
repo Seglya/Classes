@@ -1,0 +1,2 @@
+sReader to access this corpus. We specify the corpus_root to be the location of the parsed Wall Street Journal component of the corpus [1], and give a file_pattern that matches the files contained within its subfolders [2] (using forward slashes).
+

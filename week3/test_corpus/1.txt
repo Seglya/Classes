@@ -1,0 +1,1 @@
+If you have your own collection of text files that you would like to access using the above methods, you can easily load them with the help of NLTK's PlaintextCorpusReader. Check the location of your files on your file system; in the following example, we have taken this to be the directory /usr/share/dict. Whatever
